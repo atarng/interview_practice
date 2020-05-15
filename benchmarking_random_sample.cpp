@@ -42,6 +42,8 @@ int ModifiedBinarySearch(const vector<int>& collection, int raw_rand) {
   return offset;
 }
 
+// Scales With K. Seems to always perform better than Robert Floyd...
+// although I can't figure out why, it really should not O(nlogn) vs. O(1)...
 vector<int> GenerateRandomSample(int range, int samples) {
   vector<int> solution; // Populated in the order that the numbers are generated in.
   vector<int> to_exclude; // Inserted into in sorted order.
@@ -137,6 +139,8 @@ void PrepopulateRange(int N, std::vector<int>& population) {
   }
 }
 
+// Using global population instead of pass by reference to match method signature of
+// BenchmarkHelper, This algorithm scales with N.
 // std::vector<int> SampleFromPopulatedRange(int K, const std::vector<int>& population) {
 std::vector<int> SamplePopulatedRange(int /*dummy_N*/, int K) {
   std::vector<int> samples;
@@ -148,6 +152,10 @@ std::vector<int> SamplePopulatedRange(int /*dummy_N*/, int K) {
 
 void BenchMarkingHelper(int N, int K,
                         std::function<vector<int>(int, int)> to_execute) {
+  if (K > N) {
+    printf("K > N this will fail!");
+    return;
+  }
   int count = 0;
   vector<int> nums(N, 0);
   if(N <= CHECK_DISTRIBUTION_LIMIT) {
@@ -180,6 +188,11 @@ void BenchMarkingHelper(int N, int K,
 // copy constructor into the vector.
 void BenchMarkingHelperSet(int N, int K,
     std::function<unordered_set<int>(int, int)> to_execute) {
+  if (K > N) {
+    printf("K > N this will fail!");
+    return;
+  }
+
   int count = 0;
   while(count++ < TRIALS) {
     to_execute(N, K);
@@ -188,8 +201,8 @@ void BenchMarkingHelperSet(int N, int K,
 
 int main() {
   srand(time(NULL));
-  constexpr int N = 500;
-  constexpr int K = 100;
+  constexpr int N = 50;
+  constexpr int K = 10;
 
   auto end = std::chrono::system_clock::now();
   auto start = std::chrono::system_clock::now();
@@ -228,5 +241,5 @@ int main() {
   diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
   printf("execution of Standard: %lums\n\n", diff.count());
 
-	return 0;
+  return 0;
 }
