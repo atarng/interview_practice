@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 using namespace std;
 
 constexpr int ALLOWABLE_PRINT = 50;
@@ -56,6 +55,9 @@ vector<int> GenerateRandomSample(int range, int samples) {
   return solution;
 }
 ////////////////// STEVE SOLUTION /////////////////////////////////////
+// COULD NOT FIGURE OUT HOW TO MAKE THIS CONSTANT TIME!!!
+// THIS ENDS UP LEADING TO AN NLOGN SEARCH FOR ALL THE VALUES!
+// TODO(ATARNG): POKE STEVE'S BRAIN FOR WHAT HE INTENDED.
 int get_value(vector<int>& search_space, int target, int default_end) {
   int left_index = -1;
   int right_index = default_end;
@@ -98,29 +100,20 @@ vector<int> SteveSolution(vector<int>& contiguous_sub_arrays) {
   for(int i = 0; i < length; ++i) {
     sorted_value_index_collection.push_back({contiguous_sub_arrays[i], i});
   }
+
   start = std::chrono::system_clock::now();
   sort(sorted_value_index_collection.begin(), sorted_value_index_collection.end(),
       greater<pair<int,int>&>());
   end = std::chrono::system_clock::now();
   diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
   printf("execution of Steve_A: %lums\n\n", diff.count());
-  // if(sorted_value_index_collection.size() < 10) {
-  //   cout << "Pair Vector: " << endl;
-  //   for(auto p : sorted_value_index_collection) {
-  //     cout << p.first << "," << p.second << " ";
-  //   } cout << endl;
-  // } 
+
   vector<int> solution(length, 0);
   vector<int> previously_visited_indices(0);
   for(auto p : sorted_value_index_collection) {
     // Couldn't figure out how to make this constant time from Steve's Suggestion
+    // TODO(atarng): figure out how to optimize this part.
     solution[p.second] = get_value(previously_visited_indices, p.second, length);
-    // printf("setting index %d (val: %d) to: %d\n",
-    //     p.second,
-    //     contiguous_sub_arrays[p.second],
-    //     solution[p.second]
-    //     // , add_left, add_right
-    //     );
   }
   if(contiguous_sub_arrays.size() <= ALLOWABLE_PRINT) {
     cout << "Steve's Solution: " << endl;
@@ -230,21 +223,16 @@ void ContiguousSubArrays(vector<int>& contiguous_sub_arrays) {
   }
 }
 
+// vector<int> test_1 = {9, 7, 0, 6, 2};
+// Answer: 1 5 1 3 1
+// vector<int> test_2 = {3, 4, 1, 6, 2};
+// Answer: [1,3,1,5,1]
 int main() {
   srand(time(NULL));
   
   auto end = std::chrono::system_clock::now();
   auto start = std::chrono::system_clock::now();
   auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);  
-  // vector<int> test_1 = {9, 7, 0, 6, 2};
-  // Answer: 1 5 1 3 1
-  
-  // vector<int> test_2 = {3, 4, 1, 6, 2};
-  // Answer: [1,3,1,5,1]
-  
-  // Constraints members of 1 <= N[i] <= 1000000
-  // vector<int> test_1 = GenerateRandomSample(1000000000, 1000000);
-  // vector<int> test_1 = GenerateRandomSample(10, 5);
   
   // try testing worst case-ish.
   // constexpr int blah = 100000;
@@ -255,7 +243,10 @@ int main() {
   // } end = std::chrono::system_clock::now();
   // diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
   // printf("Sample Generation Time: %lums\n\n", diff.count());
-  
+
+  // Constraints members of 1 <= N[i] <= 1000000
+  // Unfortunately MY random sample generator can't generate samples
+  // of 1000000... so we'll just set it to 300000
   start = std::chrono::system_clock::now();
   vector<int> test_1 = GenerateRandomSample(10000000, 300000);
   // vector<int> test_1 = GenerateRandomSample(300, 150);
