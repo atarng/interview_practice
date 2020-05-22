@@ -82,12 +82,20 @@ int get_value(vector<int>& search_space, int target, int default_end) {
       end = 0;
     }
     swap(beg, end);
-    left_index = search_space[beg] < target ? search_space[beg] : left_index;
-    right_index = search_space[end] > target ? search_space[end] : right_index;
+    // printf("b/e: %d,%d\n", beg, end);
+    left_index = (beg >= 0 && search_space[beg] < target) ?
+        search_space[beg] : left_index;
+    right_index = (end < search_space.size() && search_space[end] > target) ?
+        search_space[end] : right_index;
   }
   int left  = target - left_index;
   int right = right_index - target;
   int total = (left + right) - 1;
+
+  // printf("i: %d,%d s: %d:%d t: %d\n",
+  //     left_index, right_index,
+  //     left, right, total);
+
   search_space.insert(search_space.begin() + end, target);
   return total;
 }
@@ -101,12 +109,12 @@ vector<int> SteveSolution(vector<int>& contiguous_sub_arrays) {
     sorted_value_index_collection.push_back({contiguous_sub_arrays[i], i});
   }
 
-  start = std::chrono::system_clock::now();
+  // start = std::chrono::system_clock::now();
   sort(sorted_value_index_collection.begin(), sorted_value_index_collection.end(),
       greater<pair<int,int>&>());
-  end = std::chrono::system_clock::now();
-  diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-  printf("execution of Steve_A: %lums\n\n", diff.count());
+  // end = std::chrono::system_clock::now();
+  // diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+  // printf("execution of Steve_A: %lums\n\n", diff.count());
 
   vector<int> solution(length, 0);
   vector<int> previously_visited_indices(0);
@@ -157,61 +165,57 @@ vector<int> DerekGetSubArraysCount(vector<int>& contiguous_sub_arrays) {
 }
 
 /////////////////////// MY SOLUTION //////////////////////////
-void PopulateLeftSubArrays(vector<int>& contiguous_sub_arrays,
-                           vector<int>& left_to_fill) {
+// void PopulateLeftSubArrays(vector<int>& contiguous_sub_arrays,
+//                            vector<int>& left_to_fill) {
+//   for(int i = 0; i < contiguous_sub_arrays.size(); ++i) {
+//     int termination_value = -1;
+//     int sub_array_sum = 0;
+//     int j = i-1;
+//     while(j >= 0) {
+//       if(contiguous_sub_arrays[j] > contiguous_sub_arrays[i]) {
+//         break;
+//       }
+//       // Skip Over Validated Subarrays
+//       if(contiguous_sub_arrays[j] > termination_value) {
+//         sub_array_sum += left_to_fill[j];
+//         termination_value = contiguous_sub_arrays[j];
+//         j -= (left_to_fill[j] );
+//       } else {
+//         --j;
+//       }
+//     }
+//     left_to_fill[i] = sub_array_sum + 1;
+//   }
+// }
+void PopulateSubArrays(vector<int>& contiguous_sub_arrays,
+                           vector<int>& array_to_fill, bool check_left) {
+  // for(int i = contiguous_sub_arrays.size() - 1; i >= 0; --i) {
   for(int i = 0; i < contiguous_sub_arrays.size(); ++i) {
+    auto a_i = check_left ? i : (contiguous_sub_arrays.size() - 1) - i;
     int termination_value = -1;
-    int sub_array_sum = 0;
-    int j = i-1;
-    while(j >= 0) {
-      if(contiguous_sub_arrays[j] > contiguous_sub_arrays[i]) {
+    int sub_array_sum = 1;
+    int j = (check_left) ? a_i - 1 : a_i + 1;
+    while((check_left ? (j >= 0) : (j < contiguous_sub_arrays.size()) )) {
+      if(contiguous_sub_arrays[j] > contiguous_sub_arrays[a_i]) {
         break;
       }
+      // Skip Over Validated Subarrays
       if(contiguous_sub_arrays[j] > termination_value) {
-        sub_array_sum += left_to_fill[j];
+        sub_array_sum += array_to_fill[j];
         termination_value = contiguous_sub_arrays[j];
-        j -= (left_to_fill[j] );
+        j += (check_left ? -array_to_fill[j] : array_to_fill[j]);
       } else {
-        --j;
+        j += (check_left ? -1 : 1);
       }
     }
-    left_to_fill[i] = sub_array_sum + 1;
-  }
-}
-void PopulateRightSubArrays(vector<int>& contiguous_sub_arrays,
-                           vector<int>& left_to_fill) {
-  for(int i = contiguous_sub_arrays.size() - 1; i >= 0; --i) {
-    int termination_value = -1;
-    int sub_array_sum = 0;
-    int j = i+1;
-    while(j < contiguous_sub_arrays.size()) {
-      if(contiguous_sub_arrays[j] > contiguous_sub_arrays[i]) {
-        break;
-      }
-      if(contiguous_sub_arrays[j] > termination_value) {
-        sub_array_sum += left_to_fill[j];
-        termination_value = contiguous_sub_arrays[j];
-        j += (left_to_fill[j] );
-      } else {
-        ++j;
-      }
-    }
-    left_to_fill[i] = sub_array_sum + 1;
+    array_to_fill[a_i] = sub_array_sum;
   }
 }
 void ContiguousSubArrays(vector<int>& contiguous_sub_arrays) {    
   vector<int> left_subs(contiguous_sub_arrays.size(), 0);
-  PopulateLeftSubArrays(contiguous_sub_arrays, left_subs);
-  // for(auto l : left_subs) {
-  //   cout << l << " ";
-  // } cout << endl;
-
+  PopulateSubArrays(contiguous_sub_arrays, left_subs, true);
   vector<int> right_subs(contiguous_sub_arrays.size(), 0);  
-  PopulateRightSubArrays(contiguous_sub_arrays, right_subs);
-  // for(auto r : right_subs) {
-  //   cout << r << " ";
-  // } cout << endl;
-
+  PopulateSubArrays(contiguous_sub_arrays, right_subs, false);
   for(int i = 0; i < contiguous_sub_arrays.size(); ++i) {
     contiguous_sub_arrays[i] = left_subs[i] + right_subs[i] - 1;
   }
@@ -243,13 +247,14 @@ int main() {
   // } end = std::chrono::system_clock::now();
   // diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
   // printf("Sample Generation Time: %lums\n\n", diff.count());
-
+  
+  // vector<int> test_1 = {10, 23, 2, 14, 18, 26, 29, 12, 19, 8};
   // Constraints members of 1 <= N[i] <= 1000000
   // Unfortunately MY random sample generator can't generate samples
   // of 1000000... so we'll just set it to 300000
   start = std::chrono::system_clock::now();
-  vector<int> test_1 = GenerateRandomSample(10000000, 300000);
-  // vector<int> test_1 = GenerateRandomSample(300, 150);
+  // vector<int> test_1 = GenerateRandomSample(10000000, 300000);
+  vector<int> test_1 = GenerateRandomSample(30, 10);
   end = std::chrono::system_clock::now();
   diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
   printf("Sample Generation Time: %lums\n\n", diff.count());
