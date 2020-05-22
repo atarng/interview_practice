@@ -10,7 +10,7 @@ using namespace std;
 
 std::vector<int> g_population;
 std::mt19937 g_gen;
-constexpr int TRIALS = 1000;
+constexpr int TRIALS = 100;
 constexpr int CHECK_DISTRIBUTION_LIMIT = 50;
 
 int ModifiedBinarySearch(const vector<int>& collection, int raw_rand) {
@@ -202,7 +202,7 @@ void BenchMarkingHelperSet(int N, int K,
 int main() {
   srand(time(NULL));
   constexpr int N = 50;
-  constexpr int K = 10;
+  constexpr int K = 2;
 
   auto end = std::chrono::system_clock::now();
   auto start = std::chrono::system_clock::now();
