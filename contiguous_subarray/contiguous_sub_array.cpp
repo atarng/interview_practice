@@ -165,37 +165,14 @@ vector<int> DerekGetSubArraysCount(vector<int>& contiguous_sub_arrays) {
 }
 
 /////////////////////// MY SOLUTION //////////////////////////
-// void PopulateLeftSubArrays(vector<int>& contiguous_sub_arrays,
-//                            vector<int>& left_to_fill) {
-//   for(int i = 0; i < contiguous_sub_arrays.size(); ++i) {
-//     int termination_value = -1;
-//     int sub_array_sum = 0;
-//     int j = i-1;
-//     while(j >= 0) {
-//       if(contiguous_sub_arrays[j] > contiguous_sub_arrays[i]) {
-//         break;
-//       }
-//       // Skip Over Validated Subarrays
-//       if(contiguous_sub_arrays[j] > termination_value) {
-//         sub_array_sum += left_to_fill[j];
-//         termination_value = contiguous_sub_arrays[j];
-//         j -= (left_to_fill[j] );
-//       } else {
-//         --j;
-//       }
-//     }
-//     left_to_fill[i] = sub_array_sum + 1;
-//   }
-// }
 void PopulateSubArrays(vector<int>& contiguous_sub_arrays,
                            vector<int>& array_to_fill, bool check_left) {
-  // for(int i = contiguous_sub_arrays.size() - 1; i >= 0; --i) {
   for(int i = 0; i < contiguous_sub_arrays.size(); ++i) {
-    auto a_i = check_left ? i : (contiguous_sub_arrays.size() - 1) - i;
+    auto a_i = (check_left ? i : (contiguous_sub_arrays.size() - 1) - i);
     int termination_value = -1;
     int sub_array_sum = 1;
-    int j = (check_left) ? a_i - 1 : a_i + 1;
-    while((check_left ? (j >= 0) : (j < contiguous_sub_arrays.size()) )) {
+    int j = (check_left ? a_i - 1 : a_i + 1);
+    while((check_left ? j >= 0 : j < contiguous_sub_arrays.size() )) {
       if(contiguous_sub_arrays[j] > contiguous_sub_arrays[a_i]) {
         break;
       }
@@ -238,7 +215,7 @@ int main() {
   auto start = std::chrono::system_clock::now();
   auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);  
   
-  // try testing worst case-ish.
+  /// try testing worst case-ish.
   // constexpr int blah = 100000;
   // vector<int> test_1(blah);
   // start = std::chrono::system_clock::now();
@@ -246,15 +223,16 @@ int main() {
   //   test_1[i-1] = i;
   // } end = std::chrono::system_clock::now();
   // diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
-  // printf("Sample Generation Time: %lums\n\n", diff.count());
+  // printf("Generate Values: %lums\n\n", diff.count());
   
   // vector<int> test_1 = {10, 23, 2, 14, 18, 26, 29, 12, 19, 8};
-  // Constraints members of 1 <= N[i] <= 1000000
-  // Unfortunately MY random sample generator can't generate samples
-  // of 1000000... so we'll just set it to 300000
+  // vector<int> test_1 = GenerateRandomSample(30, 10);
+
+  /// Constraints members of 1 <= N[i] <= 1000000
+  /// Unfortunately MY random sample generator can't generate samples
+  /// of 1000000... so we'll just set it to 300000
   start = std::chrono::system_clock::now();
-  // vector<int> test_1 = GenerateRandomSample(10000000, 300000);
-  vector<int> test_1 = GenerateRandomSample(30, 10);
+  vector<int> test_1 = GenerateRandomSample(10000000, 300000);
   end = std::chrono::system_clock::now();
   diff = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
   printf("Sample Generation Time: %lums\n\n", diff.count());
