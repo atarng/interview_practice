@@ -44,3 +44,5 @@ N = 10000 K = 1000 T: 1000
 mine: 361ms
 robertFloyd: 519ms
 Standard: 527ms
+
+O(klogk)
