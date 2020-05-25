@@ -54,6 +54,66 @@ vector<int> GenerateRandomSample(int range, int samples) {
   }
   return solution;
 }
+////////////////// ONLINE /////////////////////////////////////////////
+  // vector<int> BuildLeft(vector<int>& contiguous_sub_arrays) {
+  //   const int length = contiguous_sub_arrays.size();
+  //   vector<int> left(length);
+  //   stack<int> stack;
+  //   for (int i = 0; i < length; ++i) {
+  //     auto index_on_stack = stack.empty() ? 0 : stack.top();
+  //     while(!stack.empty() && contiguous_sub_arrays[stack.top()] < contiguous_sub_arrays[i]) {
+  //       //Size of largest subarray to the left of popped element + the popped element itself
+  //       left[i] += left[index_on_stack] + 1;
+  //       stack.pop();
+  //     }
+  //     stack.push(i);
+  //   }
+  //   if(contiguous_sub_arrays.size() <= ALLOWABLE_PRINT) {
+  //     cout << "left:" << endl;
+  //     for(int i = 0; i < left.size(); ++i) {
+  //       cout << left[i] << (((i+1) % 10 == 0) ? "\n" : " ");
+  //     } cout << endl;
+  //   }
+  //   return left;
+  //   return left;
+  // }
+  // vector<int> BuildRight(vector<int>& contiguous_sub_arrays) {
+  //   int length = contiguous_sub_arrays.size();
+  //   vector<int> right(length);
+  //   stack<int> stack;
+  //   for(int i = length-1; i >= 0; --i) {
+  //     auto index_on_stack = stack.empty() ? 0 : stack.top();
+  //     while(!stack.empty() && contiguous_sub_arrays[index_on_stack] < contiguous_sub_arrays[i]) {
+  //       //Size of largest subarray to the right of popped element + the popped element itself
+  //       right[i] += right[index_on_stack] + 1;
+  //       stack.pop();
+  //     }
+  //     stack.push(i);
+  //   }
+  //   if(contiguous_sub_arrays.size() <= ALLOWABLE_PRINT) {
+  //     cout << "right:" << endl;
+  //     for(int i = 0; i < right.size(); ++i) {
+  //       cout << right[i] << (((i+1) % 10 == 0) ? "\n" : " ");
+  //     } cout << endl;
+  //   }
+  //   return right;
+  // }
+  // vector<int> OnlineCountSubarrays(vector<int>& contiguous_sub_arrays) {
+  //   vector<int> left = BuildLeft(contiguous_sub_arrays);
+  //   vector<int> right = BuildRight(contiguous_sub_arrays);
+  //   vector<int> result(contiguous_sub_arrays.size());
+  //   for(int i=0; i < contiguous_sub_arrays.size(); ++i) {
+  //     result[i] = left[i] + right[i] + 1; //max left + max right + current element
+  //   }
+  //   if(contiguous_sub_arrays.size() <= ALLOWABLE_PRINT) {
+  //     cout << "online_solution:" << endl;
+  //     for(int i = 0; i < result.size(); ++i) {
+  //       cout << result[i] << (((i+1) % 10 == 0) ? "\n" : " ");
+  //     } cout << endl;
+  //   }
+  //   return result;
+  // }
+///////////////////////////////////////////////////////////////////////
 ////////////////// STEVE SOLUTION /////////////////////////////////////
 // COULD NOT FIGURE OUT HOW TO MAKE THIS CONSTANT TIME!!!
 // THIS ENDS UP LEADING TO AN NLOGN SEARCH FOR ALL THE VALUES!
