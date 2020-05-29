@@ -5,6 +5,17 @@ generating a random set of numbers from a range (without replacement, so no dupl
 This is compared against a method published by Robert Floyd, as well as the standard
 method over an interatable collection representing the range.
 
+# Robert Floyd Algorithm:
+- generates the random variables in  a deterministic way, with a rolling window of size (N-K), and iterated K times O(k), using an unordered_set to guarantee uniqueness, reallocating it into a vector O(k), shuffle O(k).
+Runtime: O(k) (albeit an expensive k, having to reallocate a vector of size K again), Space: O(K)
+
+# My Algorithm:
+- Generate the variables in truly random order, decrementing the size of the next random range, binary-inserting into a sorted array (Oklogk)/O(k^2) due to having to shift all elements after insertion point, consider just using a set, adding the appropriate offset value to the random number generated, then adding the adjusted random number into the vector to return O(1).
+Runtime: O(klogk) , Space: O(K)
+
+# Standard STL C++ sample method
+Runtime: O(N) , Space: O(N)
+
 For Range N, and set K, where K < N, these are the general results:
 - My algorithm scales against K's proximity to N, similarly to Robert Floyd's method.
 -- However my algorithm apparently performs better than Robert Floyd's (and I can't
