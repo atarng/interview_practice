@@ -189,8 +189,11 @@ int MinimumTimeRequiredForMessageToBeKnown(int number_of_cities,
   TravelIndexUpdateHeap travel_heap;
   // starting from city 0, send out all messengers.
   for(int i = 1; i < number_of_cities; ++i) {
-    TravelIndexPair to_insert(travel_array[i][0], i);
-    travel_heap.push(to_insert);
+    auto time_to_insert = travel_array[i][0];
+    if(time_to_insert > 0) {
+      TravelIndexPair to_insert(time_to_insert, i);
+      travel_heap.push(to_insert);
+    }
   }
   
   travel_heap.PrintHeap();
@@ -211,7 +214,7 @@ int MinimumTimeRequiredForMessageToBeKnown(int number_of_cities,
       continue;
     }
     
-    // printf("visited: %d took %d time\n", visited, top.travel_time_);
+    printf("visited: %d took %d time\n", visited, top.travel_time_);
     
     visited_array[visited] = 0;
     ++visited_count;
@@ -289,19 +292,27 @@ int** PopulateTravelArray(int argc, const char* argv[]) {
   return travel_array;
 }
 
+//////////////
+// 21
+// 20 19
+// 18 17 16
+// 15 14 13 12
+// 11 10 9 8 7
+// 6 5 4 3 2 1
+// OUTPUT: 11
 int main(int argc, char* argv[]) {
   int** as_travel_grid = 0;
   /// Preprocess string, so that we end up with an NxN Grid.
   /// Begin with dummy sample data.
-  printf("*** DEFAULT TEST ***\n");
-  int test_length = 5;
-  const char* test_v[5] = {"5",
-                           "50",
-                           "30 5",
-                           "100 20 50",
-                           "10 x x 10"};
-  as_travel_grid = PopulateTravelArray(test_length, test_v);
-  MinimumTimeRequiredForMessageToBeKnown(test_length, as_travel_grid);
+  // printf("*** DEFAULT TEST ***\n");
+  // int test_length = 5;
+  // const char* test_v[5] = {"5",
+  //                          "50",
+  //                          "30 5",
+  //                          "100 20 50",
+  //                          "10 x x 10"};
+  // as_travel_grid = PopulateTravelArray(test_length, test_v);
+  // MinimumTimeRequiredForMessageToBeKnown(test_length, as_travel_grid);
 
   // Swap this in when we have an environment that receives argc argv
   // PopulateTravelArray(argc, argv);
