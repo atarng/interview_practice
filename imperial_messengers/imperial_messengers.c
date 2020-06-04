@@ -1,39 +1,11 @@
-/// CONSTRAINTS
-// The first line of the input will be N, the number of cities, such that 1 <= n <= 100.
-//
-// atarng(note): there is no bound on the value of A(i,j),
-// assume 0-UNSIGNED_MAX? 0-INT_MAX?
-//
-/// TIME TRACKING
-//
-// 4min:40seconds to understand what the problem is asking.
-// 40 minutes to get an environment that can take stdin as input.
-// Install Cygwin/GCC
-//
-// Begin considering how to solve problem:
-// Naiive solution: go through all the permutations of legal paths:
-// Sum them all up, and then return the lowest travel time.
-// Greedy approach: Sort the possible paths by travel time.
-//
-// WOOPS: Realized Mistake in my understanding of the problem after not being able
-//        to reach the example output given the example input.
-//        go over the prompt further
-// Realize what the actual constraints of the problem is.
-//  +45 minutes. (Unlimited messengers can be sent, not just a single messenger)
-//
-// + 1.5 Hour write custom "City Traversal Heap"
-// + 1 Hour implementing solution with the Custom heap, and debugging my bugs in the heap.
-//
-// Write Test Cases +30 minutes
-//
-// Total 4 hours 30 minutes
-//
+// #define AT_DEBUG
 
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 
 #include <iostream>
+#include <chrono>
 
 // TODO(atarng): Are these ANSI C?
 #include <math.h>
@@ -95,21 +67,25 @@ struct TravelIndexUpdateHeap {
       int smaller_index = (heap_head_[left_index].travel_time_ <
           heap_head_[right_index].travel_time_) ?
           left_index : right_index;
-          
-      if(smaller_index > heap_filled_) {
+
+      // stop bubbling down if our value is less than our children
+      // Or if we hit the end.
+      if(smaller_index > heap_filled_ ||
+          heap_head_[bubble_down_index].travel_time_ <=
+          heap_head_[smaller_index].travel_time_ ) {
         break;
       }
 
-#if defined(AT_DEBUG)
-      printf("swap: (%d: %d, %d) <-> (%d: %d,%d)\n",
-          bubble_down_index,
-          heap_head_[bubble_down_index].city_index_,
-          heap_head_[bubble_down_index].travel_time_,
-          smaller_index,
-          heap_head_[smaller_index].city_index_,
-          heap_head_[smaller_index].travel_time_);
-#endif
-    
+// #if defined(AT_DEBUG)
+//       printf("swap: (%d: %d, %d) <-> (%d: %d,%d)\n",
+//           bubble_down_index,
+//           heap_head_[bubble_down_index].city_index_,
+//           heap_head_[bubble_down_index].travel_time_,
+//           smaller_index,
+//           heap_head_[smaller_index].city_index_,
+//           heap_head_[smaller_index].travel_time_);
+// #endif
+
       TravelIndexPair tmp = heap_head_[smaller_index];
       heap_head_[smaller_index] = heap_head_[bubble_down_index];
       heap_head_[bubble_down_index] = tmp;
@@ -139,8 +115,9 @@ struct TravelIndexUpdateHeap {
     while(--iterations &&
       bubble_up_index > ACTUAL_HEAP_HEAD) {
       int parent_index = floor(bubble_up_index / 2);
-      if(heap_head_[parent_index].travel_time_ <
-          heap_head_[bubble_up_index].travel_time_) {
+      // Stop Bubbling Up if our travel time is greater than or equal to parent
+      if(heap_head_[bubble_up_index].travel_time_ >=
+          heap_head_[parent_index].travel_time_) {
         break;
       }
       // swap
@@ -161,16 +138,15 @@ struct TravelIndexUpdateHeap {
           i % heap_filled_ ? " " : "\n");
     } printf("\n");
 #endif
-
   }
   
   // All elements in priority queue reduce by a fixed amount
   // Order is maintained:
-  void ElapseTime(int time_elapsed) {
-    for(int i = 0; i < heap_filled_; ++i) {
-      heap_head_[i].travel_time_ -= time_elapsed;
-    }
-  }
+  // void ElapseTime(int time_elapsed) {
+  //   for(int i = 0; i <= heap_filled_; ++i) {
+  //     heap_head_[i].travel_time_ -= time_elapsed;
+  //   }
+  // }
 };
 
 // return: When the last city has received the message.
@@ -189,17 +165,16 @@ int MinimumTimeRequiredForMessageToBeKnown(int number_of_cities,
   TravelIndexUpdateHeap travel_heap;
   // starting from city 0, send out all messengers.
   for(int i = 1; i < number_of_cities; ++i) {
-    auto time_to_insert = travel_array[i][0];
-    if(time_to_insert > 0) {
-      TravelIndexPair to_insert(time_to_insert, i);
-      travel_heap.push(to_insert);
+    if(travel_array[i][0] < 0) {
+      continue;
     }
-  }
-  
-  travel_heap.PrintHeap();
+    TravelIndexPair to_insert(travel_array[i][0], i);
+    travel_heap.push(to_insert);
+  } // travel_heap.PrintHeap();
 
   int result = 0;
   int iterations = TERMINATING_SAFETY_CHECK;
+  // int time_since_start = 0;
   // Exit if we've visited all the cities, or there are no more cities to visit.
   while(--iterations &&
     visited_count < number_of_cities && !travel_heap.empty()) {
@@ -213,17 +188,18 @@ int MinimumTimeRequiredForMessageToBeKnown(int number_of_cities,
     if(!visited_array[visited]) {
       continue;
     }
-    
-    printf("visited: %d took %d time\n", visited, top.travel_time_);
-    
     visited_array[visited] = 0;
     ++visited_count;
-    int time_elapsed = top.travel_time_;
-
-    // Decrement time among all remaining messengers.
+    int time_elapsed = max(0, top.travel_time_ - result);
+#if defined(AT_DEBUG)
+    printf("visited: %d took %d time\n", visited, time_elapsed);
+#endif
     result += time_elapsed;
-    travel_heap.ElapseTime(time_elapsed);
-    travel_heap.PrintHeap();
+    /// Decrement time among all remaining messengers.
+    // travel_heap.ElapseTime(time_elapsed);
+    // if(visited == 19) {
+    //   travel_heap.PrintHeap();
+    // }
 
     // Send new messengers out from the visited city
     for (int i = 1; i < number_of_cities; ++i) {
@@ -232,19 +208,73 @@ int MinimumTimeRequiredForMessageToBeKnown(int number_of_cities,
       int time_to_send_msg = -1;
       if (visited_array[i] &&
           (time_to_send_msg = travel_array[visited][i]) > 0) {
-
-        // printf("send(from: %d) messenger: %d (t: %d)\n",
-        //     visited, i, time_to_send_msg);
-
+        int time_plus_offset_from_start = result + time_to_send_msg;
+// #if defined(AT_DEBUG)
+//         printf("send(from: %d) messenger: %d (t: %d)\n",
+//             visited, i, time_plus_offset_from_start);
+// #endif
         // city_to_send_messenger_to
-        TravelIndexPair to_insert(time_to_send_msg, i);
+        TravelIndexPair to_insert(time_plus_offset_from_start, i);
         travel_heap.push(to_insert);
       }
     }
-    travel_heap.PrintHeap();
+    // travel_heap.PrintHeap();
   }
-  printf("END/MinimumTimeRequiredForMessageToBeKnown] result: %d\n", result);
+  printf("result: %d\n", result);
   return result;
+}
+
+void Djistras_Algo(int number_of_cities, int* travel_array[]) {
+  //2*
+  unsigned short two_int_array_size = (/* 2* */number_of_cities)*sizeof(int);
+  int* travel_parent_array = (int*)(malloc(two_int_array_size));
+  travel_parent_array[0] = 0;
+  /// Fill with "INFINITY"
+  for(int i = 1; i < number_of_cities; ++i) {
+    travel_parent_array[/* 2* */i] = MAX_INT;
+  }
+
+  unsigned short city_array_size = (number_of_cities)*sizeof(bool);
+  bool* visited_array = (bool*)(malloc(city_array_size));
+  memset(visited_array, 0, city_array_size);
+  // Loop until we confirm visiting all nodes
+  int visited_count = 0;
+  int visited_time_total = -1;
+  while(visited_count < number_of_cities) {
+    // Get unvisited node with the smallest travel_time.
+    int minimum_time_index = -1;
+    // O(n)
+    for(int i = 0; i < number_of_cities; ++i) {
+      if(visited_array[i]) { continue; }
+      if(minimum_time_index < 0 ||
+          // travel_parent_array[/* 2* */i] < travel_parent_array[/* 2* */minimum_time_index]) {
+          travel_parent_array[i] < travel_parent_array[minimum_time_index]) {
+        minimum_time_index = i;
+      }
+    }
+    // With this node, we then mark it as visited, and update its edges
+    // if it is closer than all the other existing edges that have been set.
+    visited_time_total = travel_parent_array[/* 2* */minimum_time_index];
+    visited_array[minimum_time_index] = 1;
+    ++visited_count;
+    for(int i = 0; i < number_of_cities; ++i) {
+      // Already Visited this node OR
+      // No edge between these two nodes.
+      if(visited_array[i] || travel_array[i][minimum_time_index] < 0) {
+        continue;
+      }
+      // PersonalTravelTime + current edge
+      int personal_travel_time = travel_parent_array[/* 2* */minimum_time_index];
+      int edge_travel_time = travel_array[i][minimum_time_index];
+      int& existing_travel_time = travel_parent_array[/* 2* */i];
+      if(personal_travel_time + edge_travel_time < existing_travel_time) {
+        existing_travel_time = personal_travel_time + edge_travel_time;
+        // Is this even needed?
+        // travel_parent_array[/* 2* */i+1] = minimum_time_index;
+      }
+    }
+  }
+  printf("result: %d\n", visited_time_total);
 }
 
 // Data Processing for the NxN array.
@@ -269,7 +299,8 @@ int** PopulateTravelArray(int argc, const char* argv[]) {
     int j = 0;
     while (travel_path != NULL) {
       int to_set = -1;
-      if(travel_path[0] != 'x'){
+      if(travel_path[0] != 'x' &&
+         travel_path[0] != 'X'){
         to_set = atoi(travel_path);
       }
       travel_array[i][j] = to_set;
@@ -280,26 +311,18 @@ int** PopulateTravelArray(int argc, const char* argv[]) {
     free(copy_line_value);
   }
 
-#if defined(AT_DEBUG)
-  printf("PopulateTravelArray\n");
-  for(int i = 0; i < argc; ++i) {
-    for(int j = 0; j < i; ++j) {
-    printf("%d ", travel_array[i][j]);
-    } printf("\n");
-  } printf("\n");
-#endif
+// #if defined(AT_DEBUG)
+//   printf("PopulateTravelArray\n");
+//   for(int i = 0; i < argc; ++i) {
+//     for(int j = 0; j < i; ++j) {
+//     printf("%d ", travel_array[i][j]);
+//     } printf("\n");
+//   } printf("\n");
+// #endif
   
   return travel_array;
 }
 
-//////////////
-// 21
-// 20 19
-// 18 17 16
-// 15 14 13 12
-// 11 10 9 8 7
-// 6 5 4 3 2 1
-// OUTPUT: 11
 int main(int argc, char* argv[]) {
   int** as_travel_grid = 0;
   /// Preprocess string, so that we end up with an NxN Grid.
@@ -313,9 +336,6 @@ int main(int argc, char* argv[]) {
   //                          "10 x x 10"};
   // as_travel_grid = PopulateTravelArray(test_length, test_v);
   // MinimumTimeRequiredForMessageToBeKnown(test_length, as_travel_grid);
-
-  // Swap this in when we have an environment that receives argc argv
-  // PopulateTravelArray(argc, argv);
   
   /// Or possibly just use stdin
   printf("\n*** TEST STDIN ***\n");
@@ -327,18 +347,40 @@ int main(int argc, char* argv[]) {
   const char** stdin_test = (const char**)malloc(num_lines_to_read * sizeof(char*));
   stdin_test[0] = cities;
   for(int i = 1; i < num_lines_to_read; ++i) {
+#if defined(AT_DEBUG)
     printf( "Travel times for City_%d: ", i+1);
+#endif
     // (i * (DIGITS_IN_MAX_INT + 1) + 2), including spaces and newline/null
     char* travel_path =
         (char*)malloc((i * (DIGITS_IN_MAX_INT + 1) + 2) * sizeof(char));
     fgets(travel_path, (i * (DIGITS_IN_MAX_INT + 1) + 2), stdin);
+#if defined(AT_DEBUG)
     printf("%s", travel_path);
+#endif
     stdin_test[i] = travel_path;
   } printf("\n");
+
+  auto end = std::chrono::system_clock::now();
+  auto start = std::chrono::system_clock::now();
+  auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+  
   as_travel_grid = PopulateTravelArray(num_lines_to_read, stdin_test);
+  
+  printf("My Homebrew Heap:\n");
+  start = std::chrono::system_clock::now();
   MinimumTimeRequiredForMessageToBeKnown(num_lines_to_read, as_travel_grid);
+  end = std::chrono::system_clock::now();
+  diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+  printf("execution of mine: %lums\n\n", diff.count());
+
+  printf("Djistra's Algo:\n");
+  start = std::chrono::system_clock::now();
+  Djistras_Algo(num_lines_to_read, as_travel_grid);
+  end = std::chrono::system_clock::now();
+  diff = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
+  printf("execution of djistra's: %lums\n\n", diff.count());
+
   free(stdin_test);
 
 	return 0;
 }
-
