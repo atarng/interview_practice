@@ -1,5 +1,5 @@
 # interview_practice
 
-Resources:
-LeetCode
-HackerRank
+Resources:  
+LeetCode  
+HackerRank  
